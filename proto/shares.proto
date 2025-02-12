@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "internal/adapter/grpc/proto";
+
+service SharesService {
+  rpc AddSharesBatch(AddSharesBatchRequest) returns (AddSharesBatchResponse);
+}
+
+
+message Share {
+  string uuid = 1;
+  string server_id = 2;
+  int64 coin_id = 3;
+  int64 worker_id = 4;
+  int64 wallet_id = 5;
+  int64 share_date = 6;
+  string difficulty = 7;
+  string share_dif = 8;
+  string nonce = 9;
+  bool is_solo = 10;
+  string reward_method = 11;
+  string cost = 12;
+}
+
+message AddSharesBatchRequest {
+  repeated Share shares = 1;
+}
+
+message AddSharesBatchResponse {
+  int64 added_count = 1;
+}

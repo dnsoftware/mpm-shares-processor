@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "internal/adapter/grpc/proto";
+
+//import "google/rpc/status.proto"; // Импортируем стандартный тип ошибки
+
+
+service MinersService {
+  rpc GetCoinIDByName(GetCoinIDByNameRequest) returns (GetCoinIDByNameResponse);
+  rpc CreateWallet(CreateWalletRequest) returns (CreateWalletResponse);
+  rpc CreateWorker(CreateWorkerRequest) returns (CreateWorkerResponse);
+  rpc GetWalletIDByName(GetWalletIDByNameRequest) returns (GetWalletIDByNameResponse);
+  rpc GetWorkerIDByName(GetWorkerIDByNameRequest) returns (GetWorkerIDByNameResponse);
+}
+
+
+message GetCoinIDByNameRequest {
+  string coin = 1;
+}
+
+message GetCoinIDByNameResponse {
+  int64 id = 1;
+}
+
+message CreateWalletRequest {
+  int64 id = 1;
+  int64 coin_id = 2;
+  string name = 3;
+  bool is_solo = 4;
+  string reward_method = 5;
+}
+
+message CreateWalletResponse {
+  int64 id = 1;
+}
+
+message CreateWorkerRequest {
+  int64 id = 1;
+  int64 coin_id = 2;
+  string workerfull = 3;
+  string wallet = 4;
+  string worker = 5;
+  string server_id = 6;
+  string ip = 7;
+  bool is_solo = 8;
+  string reward_method = 9;
+}
+
+message CreateWorkerResponse {
+  int64 id = 1;
+}
+
+message GetWalletIDByNameRequest {
+  string wallet = 1;
+  int64 coin_id = 2;
+  string reward_method = 3;
+}
+
+message GetWalletIDByNameResponse {
+  int64 id = 1;
+}
+
+message GetWorkerIDByNameRequest {
+  string workerfull = 1;
+  int64 coin_id = 2;
+  string reward_method = 3;
+}
+
+message GetWorkerIDByNameResponse {
+  int64 id = 1;
+}
+
+// Сообщение для деталей ошибки
+message MPError {
+  string method = 1;      // метод, где возникла ошибка
+  string description = 2; // описание
+}
+
+
