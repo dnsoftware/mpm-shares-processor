@@ -14,6 +14,7 @@ import (
 )
 
 type App struct {
+	AppID   string
 	Name    string `yaml:"app_name" envconfig:"APP_NAME"    required:"false"`
 	Version string `yaml:"app_version" envconfig:"APP_VERSION" required:"false"`
 }
@@ -60,8 +61,15 @@ type ClickhouseConfig struct {
 	Password string   `yaml:"password" envconfig:"CLICKHOUSE_PASSWORD" required:"false"` // пароль пользователя базы clickhouse
 }
 
+type Etcd struct {
+	Endpoints string
+	Username  string
+	Password  string
+}
+
 type Config struct {
-	App               App                     `yaml:"application"`
+	App               App `yaml:"application"`
+	EtcdConfig        Etcd
 	KafkaShareReader  KafkaShareReaderConfig  `yaml:"kafka_share_reader"`
 	KafkaMetricWriter KafkaMetricWriterConfig `yaml:"kafka_metric_writer"`
 	GRPC              GRPCConfig              `yaml:"grpc"`

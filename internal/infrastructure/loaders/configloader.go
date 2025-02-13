@@ -14,12 +14,7 @@ import (
 
 // LoadRemoteConfig загрузка данных конфига с кластера etcd
 // basePath - базовый путь к проекту
-func LoadRemoteConfig(basePath string, logger *zap.Logger) error {
-
-	startConf, err := configloader.LoadStartConfig(basePath + constants.StartConfigFilename)
-	if err != nil {
-		return fmt.Errorf("start config load error: %w", err)
-	}
+func LoadRemoteConfig(basePath string, startConf configloader.StartConfig, logger *zap.Logger) error {
 
 	// Получение основного конфига
 	localConfigPath := basePath + constants.LocalConfigPath

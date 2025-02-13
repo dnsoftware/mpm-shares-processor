@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 
+	"github.com/dnsoftware/mpmslib/pkg/configloader"
+
 	"github.com/dnsoftware/mpm-shares-processor/config"
 	"github.com/dnsoftware/mpm-shares-processor/internal/infrastructure/loaders"
 	"github.com/dnsoftware/mpm-shares-processor/pkg/logger"
@@ -29,7 +31,12 @@ func main() {
 	}
 	logger.InitLogger(logger.LogLevelDebug, filePath)
 
-	err = loaders.LoadRemoteConfig(basePath, logger.Log().Logger)
+	startConf, err := configloader.LoadStartConfig(basePath + constants.StartConfigFilename)
+	if err != nil {
+		log.Fatalf("start config load error: %w", err)
+	}
+
+	err = loaders.LoadRemoteConfig(basePath, *startConf, logger.Log().Logger)
 	if err != nil {
 		logger.Log().Error("Remote config failed: " + err.Error())
 	}
@@ -38,6 +45,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Main config failed: %s", err.Error())
 	}
+
+	cfg.App.AppID = startConf.AppID
+	cfg.EtcdConfig.Endpoints = startConf.Etcd.Endpoints
+	cfg.EtcdConfig.Username = startConf.Etcd.Auth.Username
+	cfg.EtcdConfig.Password = startConf.Etcd.Auth.Password
 
 	err = app.Run(ctx, cfg)
 
