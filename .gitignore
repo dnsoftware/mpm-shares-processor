@@ -10,4 +10,6 @@ coverage.html
 /certs/*.key
 /certs/*.csr
 /certs/*.srl
+/certs/*.pem
 /save-get-shares
+/mpm_shares_processor

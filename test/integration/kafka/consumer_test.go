@@ -19,19 +19,22 @@ import (
 	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc"
 
-	"github.com/dnsoftware/mpm-save-get-shares/config"
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/kafka_reader"
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/kafka_writer"
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/logger"
-	otelpkg "github.com/dnsoftware/mpm-save-get-shares/pkg/otel"
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/utils"
-	tctest "github.com/dnsoftware/mpm-save-get-shares/test/testcontainers"
-	pb "github.com/dnsoftware/mpm-shares-processor/adapter/grpc"
-	"github.com/dnsoftware/mpm-shares-processor/adapter/kafka_consumer/shares"
-	"github.com/dnsoftware/mpm-shares-processor/adapter/ristretto"
-	"github.com/dnsoftware/mpm-shares-processor/constants"
-	"github.com/dnsoftware/mpm-shares-processor/dto"
-	"github.com/dnsoftware/mpm-shares-processor/usecase/share"
+	clickhouse2 "github.com/dnsoftware/mpm-shares-processor/internal/infrastructure/clickhouse"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/kafka_reader"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/kafka_writer"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/logger"
+	otelpkg "github.com/dnsoftware/mpm-shares-processor/pkg/otel"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/utils"
+
+	"github.com/dnsoftware/mpm-shares-processor/config"
+	tctest "github.com/dnsoftware/mpm-shares-processor/test/testcontainers"
+
+	pb "github.com/dnsoftware/mpm-shares-processor/internal/adapter/grpc"
+	"github.com/dnsoftware/mpm-shares-processor/internal/adapter/kafka_consumer/shares"
+	"github.com/dnsoftware/mpm-shares-processor/internal/adapter/ristretto"
+	"github.com/dnsoftware/mpm-shares-processor/internal/constants"
+	"github.com/dnsoftware/mpm-shares-processor/internal/dto"
+	"github.com/dnsoftware/mpm-shares-processor/internal/usecase/share"
 )
 
 type sharesFound map[string]dto.ShareFound
@@ -111,7 +114,7 @@ func setup(t *testing.T) []string {
 	return brokers
 }
 
-// Тестируем получение шар из Кафки и отправку их в удаленную базу Clickhouse
+// Тестируем получение шар из Кафки и отправку их в базу Clickhouse
 func TestConsumerGetShares(t *testing.T) {
 
 	var topic string = "topic_test"
@@ -192,16 +195,46 @@ func TestConsumerGetShares(t *testing.T) {
 	minerStorage, err := pb.NewMinerStorage(conn)
 	require.NoError(t, err)
 
-	//***** Remote ClickHouse shares timeseries
-	connShares, err := grpc.DialContext(ctx,
-		cfg.GRPC.SharesTarget, // Адрес:порт
-		//grpc.WithTransportCredentials(insecure.NewCredentials()), // Отключаем TLS
-		grpc.WithTransportCredentials(*clientCreds), // Включаем TLS
-		grpc.WithUnaryInterceptor(jwt.GetClientInterceptor()),
-	)
-	require.NoError(t, err)
+	////***** Remote ClickHouse shares timeseries
+	//connShares, err := grpc.DialContext(ctx,
+	//	cfg.GRPC.SharesTarget, // Адрес:порт
+	//	//grpc.WithTransportCredentials(insecure.NewCredentials()), // Отключаем TLS
+	//	grpc.WithTransportCredentials(*clientCreds), // Включаем TLS
+	//	grpc.WithUnaryInterceptor(jwt.GetClientInterceptor()),
+	//)
+	//require.NoError(t, err)
+	//
 
-	shareStorage, err := pb.NewShareStorage(connShares)
+	// Подключаемся к mpmhouse
+	connCH, err := clickhouse2.NewClickhouseConnect(clickhouse2.Config{
+		Addr:             cfg.Clickhouse.Addr,
+		Database:         cfg.Clickhouse.Database,
+		Username:         cfg.Clickhouse.Username,
+		Password:         cfg.Clickhouse.Password,
+		MaxExecutionTime: 10,
+	})
+	if err != nil {
+		logger.Log().Fatal(err.Error())
+	}
+	defer connCH.Close()
+
+	// Проверка подключения
+	err = connCH.Ping(ctx)
+	if err != nil {
+		logger.Log().Fatal(err.Error())
+	}
+
+	cfgStore := clickhouse2.ShareStorageConfig{
+		Conn:        connCH,
+		ClusterName: "clickhouse_cluster",
+		Database:    "mpmhouse",
+	}
+	shareStorage, err := clickhouse2.NewClickhouseShareStorage(cfgStore)
+	if err != nil {
+		logger.Log().Fatal("NewShareStorage error: " + err.Error())
+	}
+
+	//shareStorage, err := pb.NewShareStorage(connShares)
 	require.NoError(t, err)
 
 	usecase := share.NewShareUseCase(shareStorage, minerStorage, coinStorage, cacheMiner, cacheCoin)
@@ -218,26 +251,6 @@ func TestConsumerGetShares(t *testing.T) {
 
 	// Стартуем вычитывание сообщений
 	consumer.StartConsume()
-
-	// Получаем канал с вычитанными сообщениями (для теста ниже)
-	// msgChan := consumer.GetConsumeChan()
-
-	//	// Получаем сообщение и делаем тестовые сравнения
-	//	var item dto.ShareFound
-	//Loop:
-	//	for {
-	//		select {
-	//		case msg := <-msgChan:
-	//			err := json.Unmarshal(msg.Value, &item)
-	//			require.NoError(t, err)
-	//			require.Equal(t, sf[item.Uuid], item)
-	//
-	//			fmt.Println(string(msg.Value))
-	//
-	//		case <-time.After(10 * time.Second):
-	//			break Loop
-	//		}
-	//	}
 
 	time.Sleep(5 * time.Second)
 }

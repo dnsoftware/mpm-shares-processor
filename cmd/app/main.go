@@ -4,11 +4,12 @@ import (
 	"context"
 	"log"
 
-	"github.com/dnsoftware/mpm-save-get-shares/config"
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/logger"
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/utils"
-	"github.com/dnsoftware/mpm-shares-processor/app"
-	"github.com/dnsoftware/mpm-shares-processor/constants"
+	"github.com/dnsoftware/mpm-shares-processor/config"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/logger"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/utils"
+
+	"github.com/dnsoftware/mpm-shares-processor/internal/app"
+	"github.com/dnsoftware/mpm-shares-processor/internal/constants"
 )
 
 func main() {

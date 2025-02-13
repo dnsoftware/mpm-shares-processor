@@ -14,12 +14,14 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/logger"
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/utils"
-	tctest "github.com/dnsoftware/mpm-save-get-shares/test/testcontainers"
-	"github.com/dnsoftware/mpm-shares-processor/adapter/postgres"
-	"github.com/dnsoftware/mpm-shares-processor/constants"
-	"github.com/dnsoftware/mpm-shares-processor/entity"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/logger"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/utils"
+
+	tctest "github.com/dnsoftware/mpm-shares-processor/test/testcontainers"
+
+	"github.com/dnsoftware/mpm-shares-processor/internal/adapter/postgres"
+	"github.com/dnsoftware/mpm-shares-processor/internal/constants"
+	"github.com/dnsoftware/mpm-shares-processor/internal/entity"
 )
 
 func TestPostgresql(t *testing.T) {
@@ -49,7 +51,7 @@ func TestPostgresql(t *testing.T) {
 	basePath, err := utils.GetProjectRoot(constants.ProjectRootAnchorFile)
 	// Укажите путь к миграциям и строку подключения к базе данных
 	m, err := migrate.New(
-		"file://"+basePath+"/"+constants.MigrationDir,
+		"file://"+basePath+"/"+constants.MigrationDir+"/postgresql",
 		dsn,
 	)
 	require.NoError(t, err)

@@ -11,10 +11,11 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/kafka_reader"
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/logger"
-	"github.com/dnsoftware/mpm-shares-processor/dto"
-	"github.com/dnsoftware/mpm-shares-processor/entity"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/kafka_reader"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/logger"
+
+	"github.com/dnsoftware/mpm-shares-processor/internal/dto"
+	"github.com/dnsoftware/mpm-shares-processor/internal/entity"
 )
 
 type Config struct {

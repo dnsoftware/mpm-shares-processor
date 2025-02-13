@@ -7,8 +7,8 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
 
-	"github.com/dnsoftware/mpm-shares-processor/dto"
-	"github.com/dnsoftware/mpm-shares-processor/entity"
+	"github.com/dnsoftware/mpm-shares-processor/internal/dto"
+	"github.com/dnsoftware/mpm-shares-processor/internal/entity"
 )
 
 // NormalizeShare нормализация шары

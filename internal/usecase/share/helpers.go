@@ -3,7 +3,7 @@ package share
 import (
 	"strings"
 
-	"github.com/dnsoftware/mpm-shares-processor/constants"
+	"github.com/dnsoftware/mpm-shares-processor/internal/constants"
 )
 
 // WalletFromWorkerfull получить кошелек из полного имени воркера

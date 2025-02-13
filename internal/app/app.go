@@ -2,27 +2,36 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/dnsoftware/mpm-miners-processor/pkg/certmanager"
 	jwtauth "github.com/dnsoftware/mpm-miners-processor/pkg/jwt"
+	"github.com/golang-migrate/migrate/v4"
 	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc"
 
-	"github.com/dnsoftware/mpm-save-get-shares/config"
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/kafka_reader"
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/logger"
-	otelpkg "github.com/dnsoftware/mpm-save-get-shares/pkg/otel"
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/utils"
-	pb "github.com/dnsoftware/mpm-shares-processor/adapter/grpc"
-	"github.com/dnsoftware/mpm-shares-processor/adapter/kafka_consumer/shares"
-	"github.com/dnsoftware/mpm-shares-processor/adapter/ristretto"
-	"github.com/dnsoftware/mpm-shares-processor/constants"
-	"github.com/dnsoftware/mpm-shares-processor/usecase/share"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/kafka_reader"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/logger"
+	otelpkg "github.com/dnsoftware/mpm-shares-processor/pkg/otel"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/utils"
+
+	"github.com/dnsoftware/mpm-shares-processor/config"
+
+	_ "github.com/golang-migrate/migrate/v4/database/clickhouse"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+
+	pb "github.com/dnsoftware/mpm-shares-processor/internal/adapter/grpc"
+	"github.com/dnsoftware/mpm-shares-processor/internal/adapter/kafka_consumer/shares"
+	"github.com/dnsoftware/mpm-shares-processor/internal/adapter/ristretto"
+	"github.com/dnsoftware/mpm-shares-processor/internal/constants"
+	clickhouse2 "github.com/dnsoftware/mpm-shares-processor/internal/infrastructure/clickhouse"
+	"github.com/dnsoftware/mpm-shares-processor/internal/usecase/share"
 )
 
 type Dependencies struct {
@@ -89,18 +98,90 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 		logger.Log().Fatal("NewMinerStorage error: " + err.Error())
 	}
 
-	//***** Remote ClickHouse shares timeseries
-	connShares, err := grpc.DialContext(ctx,
-		cfg.GRPC.SharesTarget, // Адрес:порт
-		//grpc.WithTransportCredentials(insecure.NewCredentials()), // Отключаем TLS
-		grpc.WithTransportCredentials(*clientCreds), // Включаем TLS
-		grpc.WithUnaryInterceptor(jwt.GetClientInterceptor()),
-	)
+	////***** Remote ClickHouse shares timeseries
+	//connShares, err := grpc.DialContext(ctx,
+	//	cfg.GRPC.SharesTarget, // Адрес:порт
+	//	//grpc.WithTransportCredentials(insecure.NewCredentials()), // Отключаем TLS
+	//	grpc.WithTransportCredentials(*clientCreds), // Включаем TLS
+	//	grpc.WithUnaryInterceptor(jwt.GetClientInterceptor()),
+	//)
+	//if err != nil {
+	//	logger.Log().Fatal("Remote ClickHouse DialContext error: " + err.Error())
+	//
+	//}
+
+	// Подключение к базе данных ClickHouse
+	connCH, err := clickhouse.Open(&clickhouse.Options{
+		Addr: cfg.Clickhouse.Addr,
+		Auth: clickhouse.Auth{
+			Database: "default",
+			Username: cfg.Clickhouse.Username,
+			Password: cfg.Clickhouse.Password,
+		},
+		Settings: clickhouse.Settings{
+			"max_execution_time": 60,
+		},
+		Debug: true,
+	})
 	if err != nil {
-		logger.Log().Fatal("Remote ClickHouse DialContext error: " + err.Error())
+		logger.Log().Fatal(err.Error())
 	}
 
-	shareStorage, err := pb.NewShareStorage(connShares)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Проверка подключения
+	err = connCH.Ping(ctx)
+	if err != nil {
+		logger.Log().Fatal(err.Error())
+	}
+
+	// Укажите путь к миграциям и строку подключения к базе данных
+	dsn := fmt.Sprintf("clickhouse://%s:%s@%s/%s", "default", "", cfg.Clickhouse.Addr[0], "default")
+	m, err := migrate.New(
+		"file://"+basePath+"/"+constants.MigrationDir,
+		dsn,
+	)
+	if err != nil {
+		logger.Log().Fatal(err.Error())
+	}
+
+	// Сброс миграций
+	m.Force(-1)
+
+	// Применить миграции
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		logger.Log().Fatal(err.Error())
+	}
+	log.Println("Миграции успешно применены")
+
+	connCH.Close()
+
+	// Подключаемся к mpmhouse
+	connCH, err = clickhouse2.NewClickhouseConnect(clickhouse2.Config{
+		Addr:             cfg.Clickhouse.Addr,
+		Database:         cfg.Clickhouse.Database,
+		Username:         cfg.Clickhouse.Username,
+		Password:         cfg.Clickhouse.Password,
+		MaxExecutionTime: 10,
+	})
+	if err != nil {
+		logger.Log().Fatal(err.Error())
+	}
+	defer connCH.Close()
+
+	// Проверка подключения
+	err = connCH.Ping(ctx)
+	if err != nil {
+		logger.Log().Fatal(err.Error())
+	}
+
+	cfgStore := clickhouse2.ShareStorageConfig{
+		Conn:        connCH,
+		ClusterName: "clickhouse_cluster",
+		Database:    "mpmhouse",
+	}
+	shareStorage, err := clickhouse2.NewClickhouseShareStorage(cfgStore)
 	if err != nil {
 		logger.Log().Fatal("NewShareStorage error: " + err.Error())
 	}

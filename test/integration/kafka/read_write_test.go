@@ -10,11 +10,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/kafka_reader"
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/kafka_writer"
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/logger"
-	tctest "github.com/dnsoftware/mpm-save-get-shares/test/testcontainers"
-	"github.com/dnsoftware/mpm-shares-processor/constants"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/kafka_reader"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/kafka_writer"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/logger"
+
+	tctest "github.com/dnsoftware/mpm-shares-processor/test/testcontainers"
+
+	"github.com/dnsoftware/mpm-shares-processor/internal/constants"
 )
 
 // Тестирование отправки и получения сообщений в Кафку с использованием testcontainers

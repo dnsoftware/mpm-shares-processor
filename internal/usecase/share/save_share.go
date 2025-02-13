@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/dnsoftware/mpm-shares-processor/entity"
+	"github.com/dnsoftware/mpm-shares-processor/internal/entity"
 )
 
 // AddSharesBatch сохранение шары в базе данных (ClickHouse)

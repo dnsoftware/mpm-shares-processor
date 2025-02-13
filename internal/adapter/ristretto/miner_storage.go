@@ -5,7 +5,7 @@ import (
 
 	"github.com/dgraph-io/ristretto"
 
-	"github.com/dnsoftware/mpm-shares-processor/entity"
+	"github.com/dnsoftware/mpm-shares-processor/internal/entity"
 )
 
 type RistrettoMinerStorage struct {

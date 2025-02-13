@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/dnsoftware/mpm-shares-processor/entity"
+	"github.com/dnsoftware/mpm-shares-processor/internal/entity"
 )
 
 // ShareFound Структура данных шары получаемой из Кафки

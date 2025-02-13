@@ -52,6 +52,13 @@ type OtelConfig struct {
 	MaxQueueSize       int           `yaml:"max_queue_size"`        // максимум спанов в очереди
 }
 
+type ClickhouseConfig struct {
+	Addr     []string `yaml:"addr" envconfig:"CLICKHOUSE_ADDR" required:"true"`         // хост:порт clickhouse
+	Database string   `yaml:"database" envconfig:"CLICKHOUSE_DATABASE" required:"true"` // название базы clickhouse
+	Username string   `yaml:"username" envconfig:"CLICKHOUSE_USERNAME" required:"true"` // имя пользователя базы clickhouse
+	Password string   `yaml:"password" envconfig:"CLICKHOUSE_PASSWORD" required:"true"` // пароль пользователя базы clickhouse
+}
+
 type Config struct {
 	App               App                     `yaml:"application"`
 	KafkaShareReader  KafkaShareReaderConfig  `yaml:"kafka_share_reader"`
@@ -59,6 +66,7 @@ type Config struct {
 	GRPC              GRPCConfig              `yaml:"grpc"`
 	Auth              AuthConfig              `yaml:"auth"`
 	Otel              OtelConfig              `yaml:"otel"`
+	Clickhouse        ClickhouseConfig        `yaml:"clickhouse"`
 }
 
 func New(filePath string, envFile string) (Config, error) {

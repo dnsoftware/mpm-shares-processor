@@ -3,7 +3,7 @@ package share
 import (
 	"context"
 
-	"github.com/dnsoftware/mpm-shares-processor/entity"
+	"github.com/dnsoftware/mpm-shares-processor/internal/entity"
 )
 
 // ShareStorage сохранение шары в хранилище (ClickHouse)

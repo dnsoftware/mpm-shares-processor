@@ -21,18 +21,20 @@ import (
 	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc"
 
-	"github.com/dnsoftware/mpm-save-get-shares/config"
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/logger"
-	otelpkg "github.com/dnsoftware/mpm-save-get-shares/pkg/otel"
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/utils"
-	tctest "github.com/dnsoftware/mpm-save-get-shares/test/testcontainers"
-	pb "github.com/dnsoftware/mpm-shares-processor/adapter/grpc"
-	"github.com/dnsoftware/mpm-shares-processor/adapter/postgres"
-	"github.com/dnsoftware/mpm-shares-processor/adapter/ristretto"
-	"github.com/dnsoftware/mpm-shares-processor/constants"
-	"github.com/dnsoftware/mpm-shares-processor/dto"
-	"github.com/dnsoftware/mpm-shares-processor/entity"
-	"github.com/dnsoftware/mpm-shares-processor/usecase/share"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/logger"
+	otelpkg "github.com/dnsoftware/mpm-shares-processor/pkg/otel"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/utils"
+
+	"github.com/dnsoftware/mpm-shares-processor/config"
+	tctest "github.com/dnsoftware/mpm-shares-processor/test/testcontainers"
+
+	pb "github.com/dnsoftware/mpm-shares-processor/internal/adapter/grpc"
+	"github.com/dnsoftware/mpm-shares-processor/internal/adapter/postgres"
+	"github.com/dnsoftware/mpm-shares-processor/internal/adapter/ristretto"
+	"github.com/dnsoftware/mpm-shares-processor/internal/constants"
+	"github.com/dnsoftware/mpm-shares-processor/internal/dto"
+	"github.com/dnsoftware/mpm-shares-processor/internal/entity"
+	"github.com/dnsoftware/mpm-shares-processor/internal/usecase/share"
 )
 
 func setup(t *testing.T) *pgxpool.Pool {
@@ -80,7 +82,7 @@ func setup(t *testing.T) *pgxpool.Pool {
 	basePath, err := utils.GetProjectRoot(constants.ProjectRootAnchorFile)
 	// Укажите путь к миграциям и строку подключения к базе данных
 	m, err := migrate.New(
-		"file://"+basePath+"/"+constants.MigrationDir,
+		"file://"+basePath+"/"+constants.MigrationDir+"/postgresql",
 		dsn,
 	)
 	require.NoError(t, err)

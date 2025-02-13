@@ -5,7 +5,7 @@ import (
 
 	"google.golang.org/grpc"
 
-	"github.com/dnsoftware/mpm-shares-processor/adapter/grpc/proto"
+	"github.com/dnsoftware/mpm-shares-processor/internal/adapter/grpc/proto"
 )
 
 type GRPCCoinStorage struct {

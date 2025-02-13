@@ -7,8 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/utils"
-	"github.com/dnsoftware/mpm-shares-processor/constants"
+	"github.com/dnsoftware/mpm-shares-processor/internal/constants"
+
+	"github.com/dnsoftware/mpm-shares-processor/pkg/utils"
 )
 
 func TestConfigNew(t *testing.T) {

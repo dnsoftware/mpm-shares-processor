@@ -1,0 +1,1 @@
+DROP TABLE mpmhouse.shares ON CLUSTER clickhouse_cluster SYNC;

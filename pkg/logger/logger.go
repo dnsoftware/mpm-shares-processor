@@ -7,8 +7,9 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/utils"
-	"github.com/dnsoftware/mpm-shares-processor/constants"
+	"github.com/dnsoftware/mpm-shares-processor/internal/constants"
+
+	"github.com/dnsoftware/mpm-shares-processor/pkg/utils"
 )
 
 const LogLevelProduction = "production"

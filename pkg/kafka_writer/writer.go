@@ -13,7 +13,7 @@ import (
 	"github.com/IBM/sarama"
 	"go.opentelemetry.io/otel"
 
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/logger"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/logger"
 )
 
 type Config struct {

@@ -34,3 +34,12 @@ otel:
   batch_timeout: 1   # таймоут отправки телеметрических пакетов в секундах
   max_export_batch_size: 100 # максимальное кол-во сообщений в пакете
   max_queue_size: 500 # Максимум спанов в очереди
+
+clickhouse:
+  addr:
+    - "localhost:9000"
+    - "localhost:9001"
+    - "localhost:9002"
+  database: "mpmhouse"
+  username: "mpmhouse"
+  password: "mpmhouse"

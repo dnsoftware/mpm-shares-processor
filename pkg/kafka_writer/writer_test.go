@@ -12,10 +12,10 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/kafka_reader"
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/logger"
-	otelpkg "github.com/dnsoftware/mpm-save-get-shares/pkg/otel"
-	"github.com/dnsoftware/mpm-shares-processor/constants"
+	"github.com/dnsoftware/mpm-shares-processor/internal/constants"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/kafka_reader"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/logger"
+	otelpkg "github.com/dnsoftware/mpm-shares-processor/pkg/otel"
 )
 
 // Тестирование отправки шар в кафку

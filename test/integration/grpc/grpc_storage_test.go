@@ -11,11 +11,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 
-	"github.com/dnsoftware/mpm-save-get-shares/config"
-	"github.com/dnsoftware/mpm-save-get-shares/pkg/utils"
-	pb "github.com/dnsoftware/mpm-shares-processor/adapter/grpc"
-	"github.com/dnsoftware/mpm-shares-processor/constants"
-	"github.com/dnsoftware/mpm-shares-processor/entity"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/utils"
+
+	"github.com/dnsoftware/mpm-shares-processor/config"
+
+	pb "github.com/dnsoftware/mpm-shares-processor/internal/adapter/grpc"
+	"github.com/dnsoftware/mpm-shares-processor/internal/constants"
+	"github.com/dnsoftware/mpm-shares-processor/internal/entity"
 )
 
 // Должен быть запущен сторонний микросервис к которому идут запросы от тестируемого клиента
