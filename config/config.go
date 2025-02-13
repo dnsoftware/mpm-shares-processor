@@ -14,35 +14,36 @@ import (
 )
 
 type App struct {
-	Name    string `yaml:"app_name" envconfig:"APP_NAME"    required:"true"`
-	Version string `yaml:"app_version" envconfig:"APP_VERSION" required:"true"`
+	Name    string `yaml:"app_name" envconfig:"APP_NAME"    required:"false"`
+	Version string `yaml:"app_version" envconfig:"APP_VERSION" required:"false"`
 }
 
 type KafkaShareReaderConfig struct {
-	Brokers            []string      `yaml:"brokers" envconfig:"KAFKA_SHARE_READER_BROKERS" required:"true"`
-	Group              string        `yaml:"group" envconfig:"KAFKA_SHARE_READER_GROUP" required:"true"`
-	Topic              string        `yaml:"topic" envconfig:"KAFKA_SHARE_READER_TOPIC" required:"true"`
-	AutoCommitEnable   bool          `yaml:"auto_commit_enable" envconfig:"KAFKA_SHARE_AUTO_COMMIT_ENABLE" required:"true"`
-	AutoCommitInterval int           `yaml:"auto_commit_interval" envconfig:"KAFKA_SHARE_AUTO_COMMIT_INTERVAL" required:"true"` // в секундах
+	Brokers            []string      `yaml:"brokers" envconfig:"KAFKA_SHARE_READER_BROKERS" required:"false"`
+	Group              string        `yaml:"group" envconfig:"KAFKA_SHARE_READER_GROUP" required:"false"`
+	Topic              string        `yaml:"topic" envconfig:"KAFKA_SHARE_READER_TOPIC" required:"false"`
+	AutoCommitEnable   bool          `yaml:"auto_commit_enable" envconfig:"KAFKA_SHARE_AUTO_COMMIT_ENABLE" required:"false"`
+	AutoCommitInterval int           `yaml:"auto_commit_interval" envconfig:"KAFKA_SHARE_AUTO_COMMIT_INTERVAL" required:"false"` // в секундах
 	ReadBatchSize      int           `yaml:"read_batch_size"`
 	ReadFlushInterval  time.Duration `yaml:"read_flush_interval"`
 }
 
 type KafkaMetricWriterConfig struct {
-	Brokers []string `yaml:"brokers" envconfig:"KAFKA_METRIC_WRITER_BROKERS" required:"true"`
-	Topic   string   `yaml:"topic" envconfig:"KAFKA_METRIC_WRITER_TOPIC" required:"true"`
+	Brokers []string `yaml:"brokers" envconfig:"KAFKA_METRIC_WRITER_BROKERS" required:"false"`
+	Topic   string   `yaml:"topic" envconfig:"KAFKA_METRIC_WRITER_TOPIC" required:"false"`
 }
 
 type GRPCConfig struct {
-	CoinTarget   string `yaml:"coin_target" envconfig:"GRPC_COIN_TARGET" required:"true"`     // хост:порт удаленного хранилища Coin
-	MinerTarget  string `yaml:"miner_target" envconfig:"GRPC_MINER_TARGET" required:"true"`   // хост:порт удаленного хранилища майнер/воркер
-	SharesTarget string `yaml:"shares_target" envconfig:"GRPC_SHARES_TARGET" required:"true"` // хост:порт удаленного хранилища shares timeseries
+	CoinTarget  string `yaml:"coin_target" envconfig:"GRPC_COIN_TARGET" required:"false"`   // хост:порт удаленного хранилища Coin
+	MinerTarget string `yaml:"miner_target" envconfig:"GRPC_MINER_TARGET" required:"false"` // хост:порт удаленного хранилища майнер/воркер
+	// Deprecated
+	SharesTarget string `yaml:"shares_target" envconfig:"GRPC_SHARES_TARGET" required:"false"` // хост:порт удаленного хранилища shares timeseries
 }
 
 type AuthConfig struct {
-	JWTServiceName   string   `yaml:"jwt_service_name" envconfig:"JWT_SERVICE_NAME" required:"true"`          // Название сервиса (для сверки с JWTValidServices при авторизаии)
-	JWTSecret        string   `yaml:"jwt_secret" envconfig:"AUTH_JWT_SECRET" required:"true"`                 // JWT секрет
-	JWTValidServices []string `yaml:"jwt_valid_services" envconfig:"AUTH_JWT_VALID_SERVICES" required:"true"` // список микросервисов (через запятую), которым разрешен доступ
+	JWTServiceName   string   `yaml:"jwt_service_name" envconfig:"JWT_SERVICE_NAME" required:"false"`          // Название сервиса (для сверки с JWTValidServices при авторизаии)
+	JWTSecret        string   `yaml:"jwt_secret" envconfig:"AUTH_JWT_SECRET" required:"false"`                 // JWT секрет
+	JWTValidServices []string `yaml:"jwt_valid_services" envconfig:"AUTH_JWT_VALID_SERVICES" required:"false"` // список микросервисов (через запятую), которым разрешен доступ
 }
 
 type OtelConfig struct {
@@ -53,10 +54,10 @@ type OtelConfig struct {
 }
 
 type ClickhouseConfig struct {
-	Addr     []string `yaml:"addr" envconfig:"CLICKHOUSE_ADDR" required:"true"`         // хост:порт clickhouse
-	Database string   `yaml:"database" envconfig:"CLICKHOUSE_DATABASE" required:"true"` // название базы clickhouse
-	Username string   `yaml:"username" envconfig:"CLICKHOUSE_USERNAME" required:"true"` // имя пользователя базы clickhouse
-	Password string   `yaml:"password" envconfig:"CLICKHOUSE_PASSWORD" required:"true"` // пароль пользователя базы clickhouse
+	Addr     []string `yaml:"addr" envconfig:"CLICKHOUSE_ADDR" required:"false"`         // хост:порт clickhouse
+	Database string   `yaml:"database" envconfig:"CLICKHOUSE_DATABASE" required:"false"` // название базы clickhouse
+	Username string   `yaml:"username" envconfig:"CLICKHOUSE_USERNAME" required:"false"` // имя пользователя базы clickhouse
+	Password string   `yaml:"password" envconfig:"CLICKHOUSE_PASSWORD" required:"false"` // пароль пользователя базы clickhouse
 }
 
 type Config struct {
@@ -73,7 +74,7 @@ func New(filePath string, envFile string) (Config, error) {
 	var config Config
 	var err error
 
-	// 1. Читаем из config.yaml. Самый низкий приоритет
+	// 1. Читаем из config.yaml.
 	file, err := os.Open(filePath)
 	if err == nil {
 		defer file.Close()

@@ -13,3 +13,5 @@ coverage.html
 /certs/*.pem
 /save-get-shares
 /mpm_shares_processor
+/startconf.yaml
+/_config.yaml
