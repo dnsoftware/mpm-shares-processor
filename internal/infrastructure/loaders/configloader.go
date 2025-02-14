@@ -19,7 +19,7 @@ func LoadRemoteConfig(basePath string, startConf configloader.StartConfig, logge
 	// Получение основного конфига
 	localConfigPath := basePath + constants.LocalConfigPath
 	clusterNode := strings.Split(startConf.Etcd.Endpoints, ",")
-	remoteDataKey := constants.ServiceDiscoveryPath + "/" + startConf.AppID
+	remoteDataKey := constants.ServiceConfigPath + "/" + startConf.AppID
 	caPath := basePath + constants.CaPath
 	publicPath := basePath + constants.PublicPath
 	privatePath := basePath + constants.PrivatePath

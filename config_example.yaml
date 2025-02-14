@@ -1,16 +1,17 @@
 application:
-  app_name: "Save/get shares service"
+  app_name: "Shares processor"
   app_version: "0.1.1"
+  service_ip: "127.0.0.1"
 
 kafka_share_reader:
   brokers:
     - "127.0.0.1:9092"
   group: "sharesGroup"
-  topic: "shares"
+  topic: "shares_test"
   auto_commit_enable: true
   auto_commit_interval: 5
-  read_batch_size: 1000
-  read_flush_interval: 1
+  read_batch_size: 20000    # размер пакета чтения из Кафки
+  read_flush_interval: 1   # интервал обработки считанного из Кафки пакета сообщений
 
 kafka_metric_writer:
   brokers:
@@ -18,9 +19,9 @@ kafka_metric_writer:
   topic: "shares"
 
 grpc:
-  coin_target: "127.0.0.1:17878"
-  miner_target: "127.0.0.1:17878"
-  shares_target: "127.0.0.1:6878"
+  coin_target: "127.0.0.1:7878"
+  miner_target: "127.0.0.1:7878"
+  shares_target: "127.0.0.1:6878" # Deprecated
 
 auth:
   jwt_service_name: "normalizer"

@@ -14,9 +14,16 @@ import (
 )
 
 type App struct {
-	AppID   string
-	Name    string `yaml:"app_name" envconfig:"APP_NAME"    required:"false"`
-	Version string `yaml:"app_version" envconfig:"APP_VERSION" required:"false"`
+	AppID                string
+	Name                 string            `yaml:"app_name" envconfig:"APP_NAME"    required:"false"`
+	Version              string            `yaml:"app_version" envconfig:"APP_VERSION" required:"false"`
+	Dependencies         []string          `yaml:"dependencies"` // Зависимости от других микросервисов (будет ожидать их запуска, отслеживание через Service Discovery)
+	ServiceDiscoveryList map[string]string // список текущих сервисов из Service Discovery
+}
+
+type ApiBaseUrls struct {
+	Grps string `yaml:"grpc"` // host:port для доступа к gRPC API (пустая строка, если нет)
+	Rest string `yaml:"rest"` // host:port для доступа к REST API (пустая строка, если нет)
 }
 
 type KafkaShareReaderConfig struct {
@@ -35,8 +42,8 @@ type KafkaMetricWriterConfig struct {
 }
 
 type GRPCConfig struct {
-	CoinTarget  string `yaml:"coin_target" envconfig:"GRPC_COIN_TARGET" required:"false"`   // хост:порт удаленного хранилища Coin
-	MinerTarget string `yaml:"miner_target" envconfig:"GRPC_MINER_TARGET" required:"false"` // хост:порт удаленного хранилища майнер/воркер
+	CoinTarget  string `yaml:"coin_target" envconfig:"GRPC_COIN_TARGET" required:"false"`   // ServiceDiscovery ID для адреса сервиса справочника монет
+	MinerTarget string `yaml:"miner_target" envconfig:"GRPC_MINER_TARGET" required:"false"` // ServiceDiscovery ID для адреса сервиса работы с майнерами/воркерами
 	// Deprecated
 	SharesTarget string `yaml:"shares_target" envconfig:"GRPC_SHARES_TARGET" required:"false"` // хост:порт удаленного хранилища shares timeseries
 }
@@ -68,7 +75,8 @@ type Etcd struct {
 }
 
 type Config struct {
-	App               App `yaml:"application"`
+	App               App         `yaml:"application"`
+	ApiBaseUrls       ApiBaseUrls `yaml:"api_base_urls"`
 	EtcdConfig        Etcd
 	KafkaShareReader  KafkaShareReaderConfig  `yaml:"kafka_share_reader"`
 	KafkaMetricWriter KafkaMetricWriterConfig `yaml:"kafka_metric_writer"`
@@ -81,6 +89,8 @@ type Config struct {
 func New(filePath string, envFile string) (Config, error) {
 	var config Config
 	var err error
+
+	config.App.ServiceDiscoveryList = make(map[string]string)
 
 	// 1. Читаем из config.yaml.
 	file, err := os.Open(filePath)

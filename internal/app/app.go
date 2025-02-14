@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -19,6 +20,7 @@ import (
 	"github.com/dnsoftware/mpm-shares-processor/pkg/kafka_reader"
 	"github.com/dnsoftware/mpm-shares-processor/pkg/logger"
 	otelpkg "github.com/dnsoftware/mpm-shares-processor/pkg/otel"
+	"github.com/dnsoftware/mpm-shares-processor/pkg/servicediscovery"
 	"github.com/dnsoftware/mpm-shares-processor/pkg/utils"
 
 	"github.com/dnsoftware/mpm-shares-processor/config"
@@ -45,6 +47,36 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	if err != nil {
 		log.Fatalf("GetProjectRoot failed (app.Run): %s", err.Error())
 	}
+
+	etcdConf, err := servicediscovery.NewEtcdConfig(servicediscovery.EtcdConfig{
+		Nodes:       strings.Split(cfg.EtcdConfig.Endpoints, ","),
+		Username:    cfg.EtcdConfig.Username,
+		Password:    cfg.EtcdConfig.Password,
+		CertCaPath:  basePath + constants.CaPath,
+		CertPath:    basePath + constants.PublicPath,
+		CertKeyPath: basePath + constants.PrivatePath,
+	})
+	if err != nil {
+		log.Fatalf("NewEtcdConfig error: %s", err.Error())
+	}
+
+	serviceKey := cfg.App.AppID + ":" + constants.ApiBaseUrlGrpc
+	serviceAddr := cfg.ApiBaseUrls.Grps
+	sd, err := servicediscovery.NewServiceDiscovery(*etcdConf, constants.ServiceDiscoveryPath, serviceKey, serviceAddr, 5, 10)
+	if err != nil {
+		log.Fatalf("NewServiceDiscovery error: %s", err.Error())
+	}
+
+	sd.WaitDependencies(cfg.App.Dependencies)
+	cfg.App.ServiceDiscoveryList, err = sd.DiscoverAllServices()
+	if err != nil {
+		log.Fatalf("DiscoverAllServices error: %s", err.Error())
+	}
+	logger.Log().Info("All services discovered")
+
+	// инициализируем BaseURLs доступа к API внешних сервисов
+	cfg.GRPC.CoinTarget = cfg.App.ServiceDiscoveryList[cfg.GRPC.CoinTarget]
+	cfg.GRPC.MinerTarget = cfg.App.ServiceDiscoveryList[cfg.GRPC.MinerTarget]
 
 	// Инициализация трассировщика
 	otelConfig := otelpkg.Config{
