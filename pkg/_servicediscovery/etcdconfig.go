@@ -1,4 +1,4 @@
-package servicediscovery
+package _servicediscovery
 
 import (
 	"crypto/tls"

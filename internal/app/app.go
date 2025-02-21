@@ -17,10 +17,11 @@ import (
 	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc"
 
+	"github.com/dnsoftware/mpmslib/pkg/servicediscovery"
+
 	"github.com/dnsoftware/mpm-shares-processor/pkg/kafka_reader"
 	"github.com/dnsoftware/mpm-shares-processor/pkg/logger"
 	otelpkg "github.com/dnsoftware/mpm-shares-processor/pkg/otel"
-	"github.com/dnsoftware/mpm-shares-processor/pkg/servicediscovery"
 	"github.com/dnsoftware/mpm-shares-processor/pkg/utils"
 
 	"github.com/dnsoftware/mpm-shares-processor/config"
