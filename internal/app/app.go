@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -19,6 +20,8 @@ import (
 
 	"github.com/dnsoftware/mpmslib/pkg/servicediscovery"
 
+	"github.com/dnsoftware/mpm-shares-processor/internal/adapter/rest"
+	"github.com/dnsoftware/mpm-shares-processor/internal/usecase/analitics"
 	"github.com/dnsoftware/mpm-shares-processor/pkg/kafka_reader"
 	"github.com/dnsoftware/mpm-shares-processor/pkg/logger"
 	otelpkg "github.com/dnsoftware/mpm-shares-processor/pkg/otel"
@@ -66,6 +69,11 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	sd, err := servicediscovery.NewServiceDiscovery(*etcdConf, constants.ServiceDiscoveryPath, serviceKey, serviceAddr, 5, 10)
 	if err != nil {
 		log.Fatalf("NewServiceDiscovery error: %s", err.Error())
+	}
+
+	err = sd.RegisterService(cfg.App.AppID+":"+constants.ApiBaseUrlRest, cfg.ApiBaseUrls.Rest)
+	if err != nil {
+		log.Fatalf("Rest service register error: %s", err.Error())
 	}
 
 	sd.WaitDependencies(cfg.App.Dependencies)
@@ -220,6 +228,13 @@ func Run(ctx context.Context, cfg config.Config) (err error) {
 	}
 
 	usecase := share.NewShareUseCase(shareStorage, minerStorage, coinStorage, cacheMiner, cacheCoin)
+	analiticsUsecase := analitics.NewAnaliticsUsecase(shareStorage)
+
+	// http сервер
+	httpHandler := rest.NewHandler(analiticsUsecase)
+	go func() {
+		http.ListenAndServe(cfg.ApiBaseUrls.Rest, httpHandler.Routes())
+	}()
 
 	// Вычитываем сообщения из Кафки
 	cfgReader := kafka_reader.Config{

@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/dnsoftware/mpm-shares-processor/entity"
+	"github.com/dnsoftware/mpm-shares-processor/internal/entity"
 )
 
 func TestRistrettoMinerStorage(t *testing.T) {

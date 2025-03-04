@@ -37,3 +37,8 @@ const (
 const WorkerSeparator = "."      // символ разделитель имени воркера от имени кошелька
 const MigrationDir = "migration" // папка с миграциями относительно корня проекта
 const ClickhouseCluster = "clickhouse_cluster"
+
+// ClickHouse
+const (
+	ContextTimeout = 5 // ContextTimeout для запросов, в секундах
+)
